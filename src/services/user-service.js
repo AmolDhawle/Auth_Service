@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 
 const UserRepository = require('../repository/user-repository');
 const { JWT_KEY } = require('../config/serverConfig');
+const { where } = require('sequelize');
 
 
 class UserService{
@@ -16,6 +17,24 @@ class UserService{
         } catch (error) {
             console.log("Something went wrong in the service layer", error);
             throw error;
+        }
+    }
+
+    async signIn(email, plainPassword) {
+        try {
+            const user = await this.userRepository.getByEmail(email);
+            const passwordsMatch = this.checkPassword(plainPassword, user.password );
+            
+            if(!passwordsMatch){
+                console.log("Password doesn't match");
+                throw {error: 'Incorrect password'};
+            }
+
+            const newJWT = this.createToken({email: user.email, id: user.id});
+            return newJWT;
+        } catch (error) {
+            console.log("Something went wrong in the sign in process");
+            throw error;    
         }
     }
 
@@ -43,7 +62,7 @@ class UserService{
         try {
             return bcrypt.compareSync(userInputPlainPassword, encryptedPassword);
         } catch (error) {
-            console.log("Something went wrong in the service layer");
+            console.log("Something went wrong in password comaparison");
             throw error;
         }
     }
