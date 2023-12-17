@@ -1,1 +1,1 @@
-This is authenication and authorizaiton module
+This is authentication and authorization module
